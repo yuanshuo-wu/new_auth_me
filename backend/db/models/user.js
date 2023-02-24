@@ -9,8 +9,8 @@ module.exports = (sequelize, DataTypes) => {
       const {  id, firstName, lastName, username, email } = this; // context will be the User instance
       return { id, firstName, lastName, username, email };
     }
-    toSafeObjectToken() {
-      const {  id, firstName, lastName, username, email,  } = this; // context will be the User instance
+    toSafeObjectWithToken() {
+      const {  id, firstName, lastName, username, email, token } = this; // context will be the User instance
       return { id, firstName, lastName, username, email, token };
     }
     validatePassword(password) {
@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
       return User.scope("currentUser").findByPk(id);
     }
 
-    static async isexist({ credential }) {
+    static async isexist(credential ) {
       const { Op } = require('sequelize');
       const user = await User.scope('loginUser').findOne({
         where: {

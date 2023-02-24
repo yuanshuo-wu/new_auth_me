@@ -43,42 +43,39 @@ const validateSignup = [
 
 // Sign up
 router.post(
-    '/',
-    validateSignup,
-    async (req, res) => {
-      const { firstName, lastName, email, password, username } = req.body;
+   '/',
+   validateSignup,
+   async (req, res) => {
+   const { firstName, lastName, email, password, username } = req.body;
+   const isexistemail = await User.isexist(email);
+   if (isexistemail) {
+       res.status(403)
+       return res.json({
+        message: "User already exist",
+        statusCode: 403,
+        errors: { "email": "User with that email already exists" }
+      });
+    }
 
-      const isexistemail = await User.isexist({email});
-      if (isexistemail)
-      {
+      const isexistusername = await User.isexist(username);
+      if (isexistusername) {
         res.status(403)
         return res.json({
-            message: "User already exist",
-            statusCode: 403,
-            errors: { "email": "User with that email already exists"}
-        });
-      }
-
-      const isexistusername= await User.isexist({username});
-      if (isexistusername)
-      {
-        res.status(403)
-        return res.json({
-            message: "User already exist",
-            statusCode: 403,
-            errors: { "username": "User with that username already exists"}
+          message: "User already exist",
+          statusCode: 403,
+          errors: { "username": "User with that username already exists" }
         });
       }
 
       const user = await User.signup({ firstName, lastName, email, username, password });
 
-      await setTokenCookie(res, user);
+      const tokenStr = await setTokenCookie(res, user);
 
       return res.json({
-        user: user.toSafeObjectToken(req.cookies.token)
+         user: user.toSafeObjectWithToken(tokenStr),
       });
-    }
-);
 
+    }
+  );
 
 module.exports = router;
