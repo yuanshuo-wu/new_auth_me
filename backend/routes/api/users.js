@@ -53,7 +53,7 @@ router.post(
 
       return res.json({
         user: user.toSafeObject(),
-        token: req.cookies.token
+        // token: req.cookies.token
       });
     }
 );
