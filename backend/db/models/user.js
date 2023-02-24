@@ -6,9 +6,13 @@ const bcrypt = require('bcryptjs');
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     toSafeObject() {
-      const { id, username, email } = this; // context will be the User instance
-      return { id, username, email };
+      const {  id, firstName, lastName, username, email } = this; // context will be the User instance
+      return { id, firstName, lastName, username, email };
     }
+    // toSafeObjectToken() {
+    //   const {  id, firstName, lastName, username, email, cookies } = this; // context will be the User instance
+    //   return { id, firstName, lastName, username, email, cookies };
+    // }
     validatePassword(password) {
       return bcrypt.compareSync(password, this.hashedPassword.toString());
     }
@@ -39,7 +43,9 @@ module.exports = (sequelize, DataTypes) => {
         lastName,
         username,
         email,
-        hashedPassword
+        hashedPassword,
+        // cookies
+        // token
       });
       return await User.scope('currentUser').findByPk(user.id);
     }
@@ -104,7 +110,7 @@ module.exports = (sequelize, DataTypes) => {
           attributes: { exclude: ["hashedPassword"] }
         },
         loginUser: {
-          attributes: {}
+          attributes: { exclude: ["createdAt", "updatedAt"]}
         }
       }
     }

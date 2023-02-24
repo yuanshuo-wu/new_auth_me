@@ -17,15 +17,15 @@ module.exports = {
       },
 
       firstName: { //add by me
-        type: DataTypes.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
       },
 
       lastName: {//add by me
-        type: DataTypes.STRING,
+        type: Sequelize.STRING,
         allowNull: false,
       },
-      
+
       username: {
         type: Sequelize.STRING(30),
         allowNull: false,
