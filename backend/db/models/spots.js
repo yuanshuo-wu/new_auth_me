@@ -2,8 +2,6 @@
 const { Model, Validator } = require('sequelize');
 
 const bcrypt = require('bcryptjs');
-
-
 module.exports = (sequelize, DataTypes) => {
   class Spots extends Model {
     /**
@@ -12,12 +10,21 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-       // define association here
+      // define association here
+      // Spots.belongsTo(models.User,{
+      //    foreignKey: 'ownerId',
+      //    hooks:true
+      //   }
+      // );
+
+      // User.hasMany(models.Images,{
+      //     foreignKey : 'spotId',
+      //     onDelete : 'CASCADE',
+      //     hooks: true
+      // })
 
     }
   }
-
-  
   Spots.init({
 
     ownerId: {
@@ -65,23 +72,23 @@ module.exports = (sequelize, DataTypes) => {
     },
 
 
-    avgRating: {
-      type: DataTypes.FLOAT,
-    },
-    previewImage: {
-      type: DataTypes.STRING
-    }
+    // avgRating: {
+    //   type: DataTypes.FLOAT,
+    // },
+    // previewImage: {
+    //   type: DataTypes.STRING
+    // }
   },
 
-  {
-    sequelize,
-    modelName: "Spots",
-    // defaultScope: {
-    //   attributes: {
-    //     exclude: ["createdAt", "updatedAt"]
-    //   }
-    // }
-  }
+    {
+      sequelize,
+      modelName: "Spots",
+      // defaultScope: {
+      //    attributes: {
+      //      exclude: ["createdAt", "updatedAt"]
+      //    }
+      //  }
+    }
 
   );
   return Spots;

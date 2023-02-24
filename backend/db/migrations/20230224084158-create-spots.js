@@ -7,7 +7,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 module.exports = {
-  up: async (queryInterface, Sequelize)=> {
+  up: async (queryInterface, Sequelize) => {
     return queryInterface.createTable('Spots', {
       id: {
         allowNull: false,
@@ -18,7 +18,7 @@ module.exports = {
       ownerId: {
         type: Sequelize.INTEGER,
         references: { model: 'User' },
-        //onDelete: 'CASCADE'
+        //onDelete: 'CASCADE'????
       },
       address: {
         type: Sequelize.STRING,
@@ -69,14 +69,14 @@ module.exports = {
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
 
-      avgRating: {
-        type: Sequelize.FLOAT
-      },
-      previewImage: {
-        type: Sequelize.STRING
-      },
+      // avgRating: {
+      //   type: Sequelize.FLOAT
+      // },
+      // previewImage: {
+      //   type: Sequelize.STRING
+      // },
 
-    });
+    }, options);
   },
   down: async (queryInterface, Sequelize) => {
     options.tableName = "Spots";
