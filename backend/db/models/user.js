@@ -9,16 +9,36 @@ module.exports = (sequelize, DataTypes) => {
       const {  id, firstName, lastName, username, email } = this; // context will be the User instance
       return { id, firstName, lastName, username, email };
     }
-    // toSafeObjectToken() {
-    //   const {  id, firstName, lastName, username, email, cookies } = this; // context will be the User instance
-    //   return { id, firstName, lastName, username, email, cookies };
-    // }
+    toSafeObjectToken() {
+      const {  id, firstName, lastName, username, email,  } = this; // context will be the User instance
+      return { id, firstName, lastName, username, email, token };
+    }
     validatePassword(password) {
       return bcrypt.compareSync(password, this.hashedPassword.toString());
     }
 
     static getCurrentUserById(id) {
       return User.scope("currentUser").findByPk(id);
+    }
+
+    static async isexist({ credential }) {
+      const { Op } = require('sequelize');
+      const user = await User.scope('loginUser').findOne({
+        where: {
+          [Op.or]: {
+            username: credential,
+            email: credential
+          }
+        }
+      });
+      if (user) {
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+
     }
 
     static async login({ credential, password }) {
