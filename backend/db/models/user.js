@@ -6,15 +6,39 @@ const bcrypt = require('bcryptjs');
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     toSafeObject() {
-      const { id, username, email } = this; // context will be the User instance
-      return { id, username, email };
+      const {  id, firstName, lastName, username, email } = this; // context will be the User instance
+      return { id, firstName, lastName, username, email };
     }
+    // toSafeObjectWithToken() {
+    //   const {  id, firstName, lastName, username, email, token } = this; // context will be the User instance
+    //   return { id, firstName, lastName, username, email, token };
+    // }
     validatePassword(password) {
       return bcrypt.compareSync(password, this.hashedPassword.toString());
     }
 
     static getCurrentUserById(id) {
       return User.scope("currentUser").findByPk(id);
+    }
+
+    static async isexist(credential ) {
+      const { Op } = require('sequelize');
+      const user = await User.scope('loginUser').findOne({
+        where: {
+          [Op.or]: {
+            username: credential,
+            email: credential
+          }
+        }
+      });
+      if (user) {
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+
     }
 
     static async login({ credential, password }) {
@@ -32,12 +56,16 @@ module.exports = (sequelize, DataTypes) => {
       }
     }
 
-    static async signup({ username, email, password }) {
+    static async signup({ firstName,lastName,username, email, password }) {
       const hashedPassword = bcrypt.hashSync(password);
       const user = await User.create({
+        firstName,
+        lastName,
         username,
         email,
-        hashedPassword
+        hashedPassword,
+        // cookies
+        // token
       });
       return await User.scope('currentUser').findByPk(user.id);
     }
@@ -49,6 +77,18 @@ module.exports = (sequelize, DataTypes) => {
 
   User.init(
     {
+       //add by me-------------------------
+       firstName: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+
+      lastName: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      //end add --------------------------
+
       username: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -90,7 +130,7 @@ module.exports = (sequelize, DataTypes) => {
           attributes: { exclude: ["hashedPassword"] }
         },
         loginUser: {
-          attributes: {}
+          attributes: { exclude: ["createdAt", "updatedAt"]}
         }
       }
     }
