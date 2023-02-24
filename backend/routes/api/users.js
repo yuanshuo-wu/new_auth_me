@@ -33,10 +33,10 @@ const validateSignup = [
       .not()
       .isEmail()
       .withMessage('Username cannot be an email.'),
-    check('password')
-      .exists({ checkFalsy: true })
-      .isLength({ min: 6 })
-      .withMessage('Password must be 6 characters or more.'),
+    // check('password')
+    //   .exists({ checkFalsy: true })
+    //   .isLength({ min: 6 })
+    //   .withMessage('Password must be 6 characters or more.'),
     handleValidationErrors
 ];
 
@@ -69,11 +69,11 @@ router.post(
 
       const user = await User.signup({ firstName, lastName, email, username, password });
 
-      const tokenStr = await setTokenCookie(res, user);
+      // const tokenStr = await setTokenCookie(res, user);
 
-      return res.json({
-         user: user.toSafeObjectWithToken(tokenStr),
-      });
+      return res.json(
+        user.toSafeObject(),
+      );
 
     }
   );
