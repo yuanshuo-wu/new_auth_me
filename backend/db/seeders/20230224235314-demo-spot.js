@@ -1,13 +1,13 @@
 'use strict';
+const bcrypt = require("bcryptjs");
 
 let options = {};
 if (process.env.NODE_ENV === 'production') {
   options.schema = process.env.SCHEMA;  // define your schema in options object
 }
 
-/** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up(queryInterface, Sequelize) {
+  up: async (queryInterface, Sequelize) => {
     options.tableName = 'Spots';
     return queryInterface.bulkInsert(options, [
       {
@@ -24,22 +24,12 @@ module.exports = {
         // avgRating: 4.5,
         // previewImage: 'image url'
       },
-
     ], {});
   },
 
-  async down(queryInterface, Sequelize) {
-    /**
-     * Add commands to revert seed here.
-     *
-     * Example:
-     * await queryInterface.bulkDelete('People', null, {});
-     */
-    await queryInterface.bulkDelete('Spots', null, {});
-
+  down: async (queryInterface, Sequelize) => {
     options.tableName = 'Spots';
     const Op = Sequelize.Op;
-    return queryInterface.bulkDelete(options, {}, {});
-
+    return queryInterface.bulkDelete(options, {},{});
   }
 };

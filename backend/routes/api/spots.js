@@ -34,8 +34,7 @@ router.get(
               include: [{
                 model: Images,
                 through: {
-                  attributes: [ [url, previewImage] ]/* list the wanted attributes here */
-                  //previewImage是url 的别名
+                  attributes: [ [url, previewImage] ]
                 }
               }]
             });
@@ -128,7 +127,7 @@ router.post(
 
                     res.status(201);
                     return res.json(newSpot);
-                    //？？？要求的输出里面没有"avgStarRating", "SpotImages"字段
+
 
                   } catch (err) {
                     next({
