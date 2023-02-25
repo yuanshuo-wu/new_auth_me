@@ -3,7 +3,7 @@ const { Model, Validator } = require('sequelize');
 
 const bcrypt = require('bcryptjs');
 module.exports = (sequelize, DataTypes) => {
-  class Spots extends Model {
+  class Spot extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
 
     }
   }
-  Spots.init({
+  Spot.init({
 
     ownerId: {
       type: DataTypes.INTEGER,
@@ -75,14 +75,14 @@ module.exports = (sequelize, DataTypes) => {
     // avgRating: {
     //   type: DataTypes.FLOAT,
     // },
-    // previewImage: {
-    //   type: DataTypes.STRING
-    // }
+    previewImage: {
+      type: DataTypes.STRING
+    }
   },
 
     {
       sequelize,
-      modelName: "Spots",
+      modelName: "Spot",
       // defaultScope: {
       //    attributes: {
       //      exclude: ["createdAt", "updatedAt"]
@@ -91,5 +91,5 @@ module.exports = (sequelize, DataTypes) => {
     }
 
   );
-  return Spots;
+  return Spot;
 };
