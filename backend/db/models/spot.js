@@ -4,24 +4,33 @@ const { Model, Validator } = require('sequelize');
 const bcrypt = require('bcryptjs');
 module.exports = (sequelize, DataTypes) => {
   class Spot extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
+
     static associate(models) {
       // define association here
-      // Spots.belongsTo(models.User,{
-      //    foreignKey: 'ownerId',
-      //    hooks:true
-      //   }
-      // );
+      Spot.hasMany(models.SpotImage,{
+        foreignKey : 'spotId',
+        onDelete: 'CASCADE',
+        // hooks: true
+      })
 
-      // User.hasMany(models.Images,{
-      //     foreignKey : 'spotId',
-      //     onDelete : 'CASCADE',
-      //     hooks: true
-      // })
+      Spot.hasMany(models.Review,{
+        foreignKey : 'spotId',
+        onDelete: 'CASCADE',
+        // hooks: true
+      })
+
+      Spot.belongsTo(models.User,{
+         foreignKey: 'ownerId',
+        //  hooks:true
+      })
+
+      Spot.belongsToMany(models.User,{
+        through : 'Booking',
+        foreignKey : 'spotId',
+        otherKey : 'userId',
+        onDelete: 'CASCADE',
+       //  hooks:true
+      });
 
     }
   }
