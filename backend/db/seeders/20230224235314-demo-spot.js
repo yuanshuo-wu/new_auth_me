@@ -22,7 +22,7 @@ module.exports = {
         description: 'Place where web developers are created',
         price: 123,
         // avgRating: 4.5,
-        previewImage: 'image url'
+        // previewImage: 'image url'
       },
     ], {});
   },

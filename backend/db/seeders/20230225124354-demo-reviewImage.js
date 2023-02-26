@@ -7,16 +7,16 @@ if (process.env.NODE_ENV === 'production') {
 }
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    /**
-     * Add seed commands here.
-     *
-     * Example:
-     * await queryInterface.bulkInsert('People', [{
-     *   name: 'John Doe',
-     *   isBetaMember: false
-     * }], {});
-    */
+    options.tableName = 'ReviewImages';
+    return queryInterface.bulkInsert(options, [
+      {
+        url: '127.0.0.1/1.jpg',
+        reviewId: 1
+     },
+    ], {})
+
   },
+
 
   down: async (queryInterface, Sequelize) => {
     /**
