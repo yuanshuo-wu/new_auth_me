@@ -66,6 +66,19 @@ const validateSpotImage = [
   handleValidationErrors
 ];
 
+
+const validateReview = [
+  check('review')
+    .exists({ checkFalsy: false })
+    .notEmpty()
+    .withMessage('Review text is required'),
+  check('stars')
+    .exists({ checkFalsy: false })
+    .notEmpty()
+    .withMessage('Stars must be an integer from 1 to 5'),
+  handleValidationErrors
+];
+
 const organizeReviews = (reviews) => {
   const reviewObjects = [];
   for (let i = 0; i < reviews.length; i++) {
@@ -133,6 +146,9 @@ const organizeSpots = (spots) => {
   }
   return spotObjects;
 };
+
+
+
 
 //Get all Spots
 router.get(
@@ -205,11 +221,11 @@ router.get(
           model: User,
           attributes: ['id', 'firstName', 'lastName'],
         },
-        {
-          model: Spot,
-          attributes: ["id", "ownerId", "address", "city", "state" , "country",
-           "lat", "lng", "name", "price"],
-        },
+        // {
+        //   model: Spot,
+        //   attributes: ["id", "ownerId", "address", "city", "state" , "country",
+        //    "lat", "lng", "name", "price"],
+        // },
         {
           model: ReviewImage,
           attributes: ['id', 'url'],
@@ -232,18 +248,23 @@ router.get(
 router.post(
   '/:spotId/reviews',
   restoreUser,
-  validateSpot,
+  validateReview,
   async (req, res, next) => {
 
 
     const userId = req.user.id;
-    const spotId = req.params.spotId;
-    const { review, stars } = req.body;
-    const existReview = await Review.findOne({ where: { userId: userId } });
-    if (existReview) {
+      const spotId = req.params.spotId;
+      const { review, stars } = req.body;
+      const existReview = await Review.findOne({ where: { userId: userId } });
+      if (existReview.id!=null) {
       res.status(403);
       return res.json({ "message": "User already has a review for this spot", "statusCode": 403 });
     }
+
+    // if (existReview === null) {
+    //   res.status(404);
+    //   return res.json({ "message": "Spot couldn't be found", "statusCode": 404 });
+    // }
 
     const spot = await Spot.findByPk(spotId);
     if (spot) {
