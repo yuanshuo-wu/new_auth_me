@@ -119,7 +119,7 @@ const organizeSpots = (spots) => {
       for (let j = 0; j < spot.SpotImages.length; j++) {
         const image = spot.SpotImages[j];
         if (image.preview === true) {
-          spot.previewImage = image.url
+          spot.previewImage = image.url;
         }
       }
       if (!spot.previewImage) {
@@ -191,7 +191,7 @@ router.get(
       res.status(404);
       return res.json({
         statusCode: 404,
-        message: 'Spot couldn\'t be found',
+        message: "Spot couldn't be found",
       });
     }
 
@@ -260,7 +260,7 @@ router.post(
       res.status(404);
       return res.json({
         statusCode: 404,
-        message: 'Spot couldn\'t be found',
+        message: "Spot couldn't be found",
       });
     }
   });
@@ -273,7 +273,8 @@ router.get(
 
     const spot = await Spot.findByPk(req.params.spotId, {
       rejectOnEmpty: true,
-      include: [{
+      include: [
+      {
         model: SpotImage,
         attributes: ['id', 'url', 'preview'],
       },
@@ -299,7 +300,7 @@ router.get(
       res.status(404);
       return res.json({
         statusCode: 404,
-        message: 'Spot couldn\'t be found',
+        message: "Spot couldn't be found",
       });
     }
     else {
@@ -322,7 +323,7 @@ router.post(
   validateSpot,
   async (req, res, next) => {
     const { address, city, state, country, lat, lng, name, description, price } = req.body;
-    const currentId = 1; //req.user.id,取消注释
+    const currentId = req.user.id;
 
     let newSpot = await Spot.create({
       "ownerId": currentId,
@@ -373,7 +374,7 @@ router.post(
       res.status(404);
       return res.json({
         statusCode: 404,
-        message: 'Spot couldn\'t be found',
+        message: "Spot couldn't be found",
       });
     }
   });
@@ -391,6 +392,7 @@ router.put(
     if (spot) {
 
       const { address, city, state, country, lat, lng, name, description, price } = req.body;
+      // const currentId = req.user.id;
       let editSpot = await Spot.update({
         "address": address,
         "city": city,
@@ -401,16 +403,17 @@ router.put(
         "name": name,
         "description": description,
         "price": price
-      });
+      },{where: {id : spotId}}
+      );
 
       res.status(200);
-      return res.json(editSpot);
+      return res.json(spot);
     }
     else {
       res.status(404);
       return res.json({
         statusCode: 404,
-        message: 'Spot couldn\'t be found',
+        message: "Spot couldn't be found",
       });
     }
   });
@@ -440,7 +443,7 @@ router.delete(
       res.status(404);
       return res.json({
         statusCode: 404,
-        message: 'Spot couldn\'t be found',
+        message: "Spot couldn't be found",
       });
     }
   });
