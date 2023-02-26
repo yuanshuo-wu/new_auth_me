@@ -6,13 +6,9 @@ const bcrypt = require('bcryptjs');
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     toSafeObject() {
-      const {  id, firstName, lastName, username, email } = this; // context will be the User instance
-      return { id, firstName, lastName, username, email };
+      const { id, username, email } = this; // context will be the User instance
+      return { id, username, email };
     }
-    // toSafeObjectWithToken() {
-    //   const {  id, firstName, lastName, username, email, token } = this; // context will be the User instance
-    //   return { id, firstName, lastName, username, email, token };
-    // }
     validatePassword(password) {
       return bcrypt.compareSync(password, this.hashedPassword.toString());
     }
@@ -41,6 +37,8 @@ module.exports = (sequelize, DataTypes) => {
 
     }
 
+
+
     static async login({ credential, password }) {
       const { Op } = require('sequelize');
       const user = await User.scope('loginUser').findOne({
@@ -56,44 +54,27 @@ module.exports = (sequelize, DataTypes) => {
       }
     }
 
-    static async signup({ firstName,lastName,username, email, password }) {
+    static async signup({ firstName, lastName, username, email, password }) {
       const hashedPassword = bcrypt.hashSync(password);
       const user = await User.create({
         firstName,
         lastName,
         username,
         email,
-        hashedPassword,
-        // cookies
-        // token
+        hashedPassword
       });
       return await User.scope('currentUser').findByPk(user.id);
     }
 
     static associate(models) {
       // define association here
-      User.hasMany(models.Spot,{
-        foreignKey : 'ownerId',
-        // onDelete : 'CASCADE',
-        // hooks: true
-      })
-      User.hasMany(models.Spot,{
-        foreignKey : 'Reviews',
-        // hooks: true
-      })
-      User.belongsToMany(models.Spot,{
-        through : 'Booking',
-        otherKey : 'spotId',
-        foreignKey : 'userId',
-        // hooks: true
-      })
     }
   };
 
   User.init(
     {
-       //add by me-------------------------
-       firstName: {
+      //add by me-------------------------
+      firstName: {
         type: DataTypes.STRING,
         allowNull: false,
       },
@@ -103,6 +84,15 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       //end add --------------------------
+
+      email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          len: [3, 256],
+          isEmail: true
+        }
+      },
 
       username: {
         type: DataTypes.STRING,
@@ -116,14 +106,9 @@ module.exports = (sequelize, DataTypes) => {
           }
         }
       },
-      email: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-          len: [3, 256],
-          isEmail: true
-        }
-      },
+
+
+
       hashedPassword: {
         type: DataTypes.STRING.BINARY,
         allowNull: false,
@@ -132,6 +117,7 @@ module.exports = (sequelize, DataTypes) => {
         }
       }
     },
+
     {
       sequelize,
       modelName: "User",
@@ -145,7 +131,7 @@ module.exports = (sequelize, DataTypes) => {
           attributes: { exclude: ["hashedPassword"] }
         },
         loginUser: {
-          attributes: { exclude: ["createdAt", "updatedAt"]}
+          attributes: {}
         }
       }
     }
