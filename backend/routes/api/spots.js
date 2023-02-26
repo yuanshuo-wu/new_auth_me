@@ -3,10 +3,25 @@ const router = express.Router();
 
 const { setTokenCookie, requireAuth } = require('../../utils/auth');
 const { restoreUser } = require('../../utils/auth');
-const { Spot, SpotImage, Review, ReviewImage, User, sequelize } = require('../../db/models');
+const { Spot, SpotImage, Review, ReviewImage, User,Booking, sequelize } = require('../../db/models');
 
 const { check } = require('express-validator');
 const { handleValidationErrors } = require('../../utils/validation');
+
+function formatDate(d) {
+
+  month = '' + (d.getMonth() + 1),
+  day = '' + d.getDate(),
+  year = d.getFullYear();
+
+if (month.length < 2)
+  month = '0' + month;
+if (day.length < 2)
+  day = '0' + day;
+
+return [year, month, day].join('-');
+}
+
 
 const validateSpot = [
   check('address')
@@ -147,7 +162,41 @@ const organizeSpots = (spots) => {
   return spotObjects;
 };
 
+//Get all Bookings for a Spot based on the Spot’s id
+// const organizeBookings = (bookings,user) => {
+//   const bookingObjects = [];
+//   const curuser={"User": { "id": user.id, "firstName": user.firstName, "lastName": user.lastName}};
 
+//   for (let i = 0; i < bookings.length; i++) {
+//     const booking = bookings[i];
+//     const jbooking = booking.toJSON();
+
+//       for (let j = 0; j < jbooking.Spot.SpotImages.length; j++) {
+//         const image = jbooking.Spot.SpotImages[j];
+//         if (image.preview === true) {
+//           jbooking.Spot.previewImage=image.url;
+//         }
+//       }
+//       delete jbooking.Spot.SpotImages;
+
+//     bookingObjects.push(jbooking);
+
+//   }
+//   return bookingObjects;
+// };
+const organizeBookings = (bookings,user) => {
+  const bookingObjects = [];
+  const curuser= { "id": user.id, "firstName": user.firstName, "lastName": user.lastName};
+
+  for (let i = 0; i < bookings.length; i++) {
+  const booking = bookings[i];
+  const jbooking = booking.toJSON();
+  jbooking.User = curuser;
+  delete jbooking.Spot;
+  bookingObjects.push(jbooking);
+  }
+    return bookingObjects;
+};
 
 
 //Get all Spots
@@ -212,9 +261,6 @@ router.get(
     }
 
 
-
-
-
     const reviews = await Review.findAll({
       include: [
         {
@@ -229,7 +275,6 @@ router.get(
         {
           model: ReviewImage,
           attributes: ['id', 'url'],
-          ///不知道为什么这个ReviewImage一接上就报错。。。
         },
       ],
       where: {
@@ -294,8 +339,7 @@ router.get(
 
     const spot = await Spot.findByPk(req.params.spotId, {
       rejectOnEmpty: true,
-      include: [
-      {
+      include: [{
         model: SpotImage,
         attributes: ['id', 'url', 'preview'],
       },
@@ -321,7 +365,7 @@ router.get(
       res.status(404);
       return res.json({
         statusCode: 404,
-        message: "Spot couldn't be found",
+        message: 'Spot couldn\'t be found',
       });
     }
     else {
@@ -400,6 +444,130 @@ router.post(
     }
   });
 
+
+  //Get all Bookings for a Spot based on the Spot’s id
+  router.get(
+    '/:spotId/bookings',
+    restoreUser,
+
+    async (req, res) => {
+      const spotId = req.params.spotId;
+      const userId = req.user.id;
+
+      const { startDate, endDate } = req.body;
+
+      const spot = await Spot.findByPk(spotId);
+      if (!spot) {
+        res.status(404);
+        return res.json({
+          statusCode: 404,
+          message: 'Spot couldn\'t be found',
+        });
+      }
+
+
+
+      const bookings = await Booking.findAll({
+        include: [{
+          model: Spot,
+          attributes: {
+            exclude: ['createdAt','updatedAt']
+          },
+          include:[{model: SpotImage}]
+        },
+        ],
+        where: {
+          spotId: spotId
+        }
+      });
+
+
+      if (spot.ownerId != userId) {
+        res.status(200);
+
+        const bookingObjects = [];
+        for (let i = 0; i < bookings.length; i++) {
+          const booking = bookings[i];
+          const jbooking = booking.toJSON();
+          delete jbooking.id;
+          delete jbooking.userId;
+          delete jbooking.createdAt;
+          delete jbooking.updatedAt;
+          delete jbooking.Spot;
+          bookingObjects.push(jbooking);
+        }
+        return res.json({ "Bookings": bookingObjects })
+
+      }
+      else {
+        const bookingDatas = organizeBookings(bookings, req.user);
+        res.status(200);
+        return res.json({ "Bookings": bookingDatas })
+      }
+
+
+    });
+
+
+//Create a Booking from a Spot based on the Spot’s id
+router.post(
+  '/:spotId/bookings',
+  restoreUser,
+  async (req, res) => {
+
+  const userId = req.user.id;
+  const spotId = req.params.spotId;
+  const parsedSpot = parseInt(spotId);
+  const { startDate, endDate } = req.body;
+  const dStart = new Date(startDate);
+  const dEnd = new Date(endDate);
+  if (dEnd < dStart) {
+    res.status(400);
+    return res.json({
+      "message": "Validation error",
+      "statusCode": 400,
+      "errors": { "endDate": "endDate cannot be on or before startDate" }
+    });
+  }
+
+
+  //检查日期冲突
+  const conflictError = { "message": "Sorry, this spot is already booked for the specified dates", "statusCode": 403, "errors": [] }
+  const existBookings = await Booking.findAll({ where: { spotId: spotId } });
+  for (let i = 0; i < existBookings.length; i++) {
+    if (dStart >= existBookings[i].startDate && dStart <= existBookings[i].endDate) {
+      conflictError.errors.push('Start date conflicts with an existing booking');
+    }
+    if (dEnd >= existBookings[i].startDate && dEnd <= existBookings[i].endDate) {
+      conflictError.errors.push('End date conflicts with an existing booking');
+    }
+  }
+    if (conflictError.errors.length > 0) {
+      res.status(403);
+      return res.json(conflictError);
+  }
+
+
+  const spot = await Spot.findByPk(spotId);
+
+  if (spot) {
+    let newBooking = await Booking.create({
+      "startDate": dStart,
+      "endDate": dEnd,
+      "spotId": parsedSpot,
+      "userId": userId
+    });
+    res.status(200);
+    return res.json(newBooking);
+    }
+  else {
+    res.status(404);
+    return res.json({
+        statusCode: 404,
+      message: 'Spot couldn\'t be found',
+      });
+  }
+  });
 
 //Edit a Spot
 router.put(
