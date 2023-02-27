@@ -3,7 +3,8 @@ const router = express.Router();
 
 const { setTokenCookie, requireAuth } = require('../../utils/auth');
 const { restoreUser } = require('../../utils/auth');
-const { Spot, SpotImage, User, sequelize } = require('../../db/models');
+
+const { SpotImage, Spot } = require('../../db/models')
 
 const { check } = require('express-validator');
 const { handleValidationErrors } = require('../../utils/validation');
@@ -13,7 +14,7 @@ const { where } = require('sequelize');
 //Delete a Spot Image
 router.delete(
   '/:imageId',
-  restoreUser, 
+  restoreUser,
   async (req, res, next) => {
 
     const imageId = req.params.imageId;
