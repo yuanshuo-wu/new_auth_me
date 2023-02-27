@@ -39,23 +39,6 @@ router.post(
         })
       }
 
-      // if (!user) {
-      //   const err = new Error('Validation error');
-      //   err.status = 401;
-      //   err.title = 'Validation error';
-      //   err.errors = { credential: "Invalid credentials" };
-      //   return next(err);
-      // }
-
-      // if (!body) {
-      //   res.status(400)
-      //   return res.json({
-      //       message: 'The requested boardgame could not be found',
-      //       statusCode: 400,
-      //       errors:{ credential: 'Email or username is required', password: "Password is required" }
-      //   })
-      // }
-      // res.json(body)
 
       await setTokenCookie(res, user);
 
