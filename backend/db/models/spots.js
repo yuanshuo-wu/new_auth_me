@@ -1,7 +1,7 @@
 'use strict';
 const { Model, Validator } = require('sequelize');
 
-const bcrypt = require('bcryptjs');
+// const bcrypt = require('bcryptjs');
 module.exports = (sequelize, DataTypes) => {
   class Spot extends Model {
     /**
@@ -11,23 +11,23 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-       Spot.belongsTo(
-         models.User,
-         { foreignKey: 'ownerId' ,
-         as: 'Owner'}
-       );
-
-       Spot.hasMany(
-         models.SpotImage,
-         { foreignKey: 'spotId' }
-       );
-
-       
-       Spot.hasMany(
+      Spot.belongsTo(
+        models.User,
+         { foreignKey: 'ownerId', as: 'Owner'});
+      Spot.belongsToMany(
+        models.User, {
+        through: 'Booking',
+        otherKey: 'userId',
+        foreignKey: 'spotId',
+        onDelete: 'CASCADE'
+      });
+      Spot.hasMany(
         models.Review,
-        { foreignKey: 'spotId' }
-      );
-      
+        { foreignKey: 'spotId', onDelete: 'CASCADE'});
+      Spot.hasMany(
+        models.SpotImage,
+         { foreignKey: 'spotId', onDelete: 'CASCADE'});
+
     }
   }
   Spot.init({

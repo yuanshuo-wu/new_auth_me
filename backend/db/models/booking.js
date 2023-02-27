@@ -2,6 +2,7 @@
 const { Model, Validator } = require('sequelize');
 
 const bcrypt = require('bcryptjs');
+
 module.exports = (sequelize, DataTypes) => {
   class Booking extends Model {
 

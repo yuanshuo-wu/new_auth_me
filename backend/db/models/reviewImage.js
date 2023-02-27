@@ -1,7 +1,5 @@
 'use strict';
-const {
-  Model
-} = require('sequelize');
+const { Model, Validator } = require('sequelize');
 
 
 module.exports = (sequelize, DataTypes) => {
@@ -20,8 +18,8 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   ReviewImage.init({
-    url: DataTypes.STRING,
-    reviewId: DataTypes.INTEGER
+    url: {type:DataTypes.STRING},
+    reviewId: {type:DataTypes.INTEGER}
   }, {
     sequelize,
     modelName: 'ReviewImage',
