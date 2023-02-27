@@ -232,7 +232,7 @@ router.get(
     if (minPrice && !isNumeric(minPrice) && minPrice<0 )
     {
       errorMessage.errors.minLat = 'MinPrice price must be greater than or equal to 0';
-      numberErr++;
+      numberErr++
     }
     if (maxPrice && !isNumeric(maxPrice) && maxPrice<0 )
     {
@@ -256,7 +256,6 @@ router.get(
     if (page > 20){
       page = 20;
     }
-
 
 
     const pagination = {};
@@ -349,7 +348,6 @@ router.get(
         message: "Spot couldn't be found",
       });
     }
-
 
     const reviews = await Review.findAll({
       include: [
