@@ -158,21 +158,20 @@ router.put(
   async (req, res, next) => {
 
     const reviewId = req.params.reviewId;
-    const theReview = await Review.findByPk(reviewId);
-    if (theReview) {
-
-      const { review, stars } = req.body;
-      let editreview = await Review.update({
+    const { review, stars } = req.body;
+    const editreview = await Review.findByPk(reviewId);
+    if (editreview) {
+      await Review.update({
         "review": review,
         "stars": stars,
       },{
         where:{id:reviewId}
       });
 
-      // const theReview = await Review.findByPk(reviewId);
+      let editreview =await Review.findByPk(reviewId);
 
       res.status(200);
-      return res.json(theReview);
+      return res.json(editreview);
     }
     else {
       res.status(404);

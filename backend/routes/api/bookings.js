@@ -58,17 +58,20 @@ router.get(
       const bookings = await Booking.findAll({
         include: [{
           model: Spot,
+          // model: SpotImage,
           attributes: {
-            exclude: ['createdAt', 'updatedAt']
+            exclude: ['description','createdAt', 'updatedAt']
           },
-          include: [{ model: SpotImage }]
+          //include: [{ model: SpotImage,}]
         },
+
         ],
+        where:[{userId: id}]
       });
-      const bookingDatas = organizeBookings(bookings);
+      //const bookingDatas = organizeBookings(bookings);
 
       res.status(200);
-      return res.json({ "Bookings": bookingDatas })
+      return res.json({ "Bookings": bookings })
     }
   });
 
@@ -122,14 +125,16 @@ router.put(
       }
 
 
-      let editBooking = await Booking.update({
+      await Booking.update({
         "startDate": dStart,
         "endDate": dEnd
       },
       { where: { id: bookingId } });
 
+      let editBooking = await Booking.findByPk(bookingId);
+
       res.status(200);
-      return res.json(booking);
+      return res.json(editBooking);
     }
     else {
       res.status(404);
@@ -144,8 +149,20 @@ router.delete(
   restoreUser,
   async (req, res, next) => {
 
-    const bookingId = req.params.bookingId;
-    const booking = await Booking.findByPk(bookingId);
+  const bookingId =parseInt(req.params.bookingId);
+    const booking = await Booking.findOne(
+      {
+        where:{
+          id: bookingId
+        }
+    });
+    if(!booking) {
+      res.status(404);
+      return res.json({
+        statusCode: 404,
+        message: 'Booking couldn\'t be found',
+      });
+    };
     if (booking) {
       await Booking.destroy({
         where: {
@@ -157,15 +174,15 @@ router.delete(
         "message": "Successfully deleted",
         "statusCode": 200
       });
-    }
-    else {
-      res.status(404);
+    };
+    const { startDate } = req.body;
+    if(new Date(startDate) < new Date()) {
+      res.status(403);
       return res.json({
-        statusCode: 404,
-        message: 'Booking couldn\'t be found',
+        "message" : "Bookings that have been started can't be deleted",
+        "statusCode" : 403
       });
-    }
+    };
+
   });
-
-
 module.exports = router;
