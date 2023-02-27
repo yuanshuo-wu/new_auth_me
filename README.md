@@ -1,4 +1,3 @@
-# new_auth_me
 
 # AirBnB Clone
 
