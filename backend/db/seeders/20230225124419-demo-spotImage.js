@@ -25,9 +25,7 @@ module.exports = {
     options.tableName = 'SpotImages'
     const Op = Sequelize.Op;
     return queryInterface.bulkDelete(options, {
-      url: {
-        [Op.in]: ['127.0.0.1/1.jpg']
-      }
+      url: {[Op.in]: ['127.0.0.1/1.jpg']}
     }, {})
   }
 };

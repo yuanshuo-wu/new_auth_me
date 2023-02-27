@@ -94,41 +94,10 @@ const validateReview = [
   handleValidationErrors
 ];
 
-const validateQueryFilters = [
-  check('minLat')
-    .exists({ checkFalsy: false })
-    .notEmpty()
-    .isFloat()
-    .withMessage('Minimum latitude is invalid",'),
-  check('maxLat')
-    .exists({ checkFalsy: false })
-    .notEmpty()
-    .isFloat()
-    .withMessage('Maximum latitude is invalid",'),
-
-  check('minLng')
-    .exists({ checkFalsy: true })
-    .notEmpty()
-    .isFloat()
-    .withMessage('Minimum latitude is invalid'),
-  check('maxLng')
-    .exists({ checkFalsy: true })
-    .notEmpty()
-    .isFloat()
-    .withMessage('Maximum latitude is invalid'),
-
-  check('minprice')
-    .exists({ checkFalsy: false })
-    .notEmpty()
-    .isDecimal()
-    .withMessage('Minimum price must be greater than or equal to 0'),
-  check('maxprice')
-    .exists({ checkFalsy: false })
-    .notEmpty()
-    .isDecimal()
-    .withMessage('Maximum price must be greater than or equal to 0'),
-  handleValidationErrors
-];
+function isNumeric(str) {
+  if (typeof str != "string") return false
+  return !isNaN(str) && !isNaN(parseFloat(str))
+}
 
 
 const organizeReviews = (reviews) => {
@@ -218,7 +187,105 @@ const organizeBookings = (bookings,user) => {
 //Get all Spots
 router.get(
   '/',
+
   async (req, res) => {
+    let { page, size, minLat, maxLat, minLng, maxLng, minPrice, maxPrice } = req.query;
+
+    const errorMessage = {
+      "message": "Validation Error", "statusCode": 400, "errors":{}
+    }
+
+    let numberErr=0;
+    if (page && page < 1)
+    {
+      errorMessage.errors.page = 'Page must be greater than or equal to 1';
+      numberErr++;
+    }
+
+    if (size && size < 1)
+    {
+      errorMessage.errors.page = 'Size must be greater than or equal to 1';
+      numberErr++;
+    }
+
+
+    if (minLat && (!isNumeric(minLat)))
+    {
+      errorMessage.errors.minLat = 'Minimum latitude is invalid';
+      numberErr++;
+    }
+    if (maxLat && !isNumeric(maxLat))
+    {
+      errorMessage.errors.minLat = 'MaxLat latitude is invalid';
+      numberErr++;
+    }
+    if (minLng && !isNumeric(minLng))
+    {
+      errorMessage.errors.minLat = 'MinLng latitude is invalid';
+      numberErr++;
+    }
+    if (maxLng && !isNumeric(maxLng))
+    {
+      errorMessage.errors.minLat = 'MaxLng latitude is invalid';
+      numberErr++;
+    }
+    if (minPrice && !isNumeric(minPrice) && minPrice<0 )
+    {
+      errorMessage.errors.minLat = 'MinPrice price must be greater than or equal to 0';
+      numberErr++;
+    }
+    if (maxPrice && !isNumeric(maxPrice) && maxPrice<0 )
+    {
+      errorMessage.errors.minLat = 'Maximum price must be greater than or equal to 0';
+      numberErr++;
+    }
+
+    if (numberErr>0)
+    {
+      res.status(400);
+      return res.json(errorMessage);
+    }
+
+    // default page and size
+    if (!page) page = 1;
+    if (!size) size = 20;
+
+    page = parseInt(page);
+    size = parseInt(size);
+
+    if (page > 20){
+      page = 20;
+    }
+
+
+
+    const pagination = {};
+    pagination.limit = size;
+    pagination.offset = size * (page - 1);
+
+
+    const where = {};
+    if (minLat) {
+      where.Lat >= minLat;
+    }
+    if (maxLat) {
+      where.Lat <= maxLat;
+    }
+
+    if (minLng) {
+      where.Lng >= minLng;
+    }
+    if (maxLng) {
+      where.Lng <= maxLng;
+    }
+
+    if (minPrice) {
+      where.Price >= minPrice;
+    }
+    if (maxPrice) {
+      where.Price <= maxPrice;
+    }
+
     const spots = await Spot.findAll({
       include: [{
         model: SpotImage,
@@ -227,12 +294,19 @@ router.get(
         model: Review,
       }
       ],
+      where,
+      ...pagination,
     });
     const spotDatas = organizeSpots(spots);
 
     res.status(200);
-    return res.json({ "Spots": spotDatas })
+    return res.json({
+      "Spots": spotDatas,
+      "page": page,
+      "size": size,
+    })
   });
+
 
 
 //Get all Spots owned by the Current User
@@ -565,7 +639,7 @@ router.post(
   }
 
 
-  //检查日期冲突
+  //date validation
   const conflictError = { "message": "Sorry, this spot is already booked for the specified dates", "statusCode": 403, "errors": [] }
   const existBookings = await Booking.findAll({ where: { spotId: spotId } });
   for (let i = 0; i < existBookings.length; i++) {

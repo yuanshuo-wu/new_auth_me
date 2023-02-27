@@ -18,7 +18,7 @@ module.exports = {
       ownerId: {
         type: Sequelize.INTEGER,
         references: { model: 'Users' },
-        // //onDelete: 'CASCADE'????
+        // //onDelete: 'CASCADE'?
       },
       address: {
         type: Sequelize.STRING,
@@ -68,7 +68,6 @@ module.exports = {
         type: Sequelize.DATE,
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       }
-
       // avgRating: {
       //   type: Sequelize.FLOAT
       // },
