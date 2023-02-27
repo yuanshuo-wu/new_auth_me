@@ -1,5 +1,4 @@
 'use strict';
-const bcrypt = require("bcryptjs");
 
 let options = {};
 if (process.env.NODE_ENV === 'production') {
@@ -10,21 +9,28 @@ if (process.env.NODE_ENV === 'production') {
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-
-    options.tableName = 'ReviewImages'
+    options.tableName = 'Spots';
     return queryInterface.bulkInsert(options, [
       {
-       url: '127.0.0.1/1.jpg',
-       reviewId: 1
-     },
-    ])
+      ownerId: 1,
+      address: '123 Disney Lane',
+      city: 'San Francisco',
+      state: 'California',
+      country: 'United States of America',
+      lat: 37.7645358,
+      lng: -122.4730327,
+      name: 'App Academy',
+      description: 'Place where web developers are created',
+      price: 123,
+    },
+   ])
   },
 
   async down(queryInterface, Sequelize) {
-    options.tableName = 'ReviewImages';
+    options.tableName = 'Spots';
     const Op = Sequelize.Op;
     return queryInterface.bulkDelete(options, {
-      url: { [Op.in]: ['127.0.0.1/1.jpg'] }
+      name: { [Op.in]: ['App Academy'] }
     }, {});
   }
 };
